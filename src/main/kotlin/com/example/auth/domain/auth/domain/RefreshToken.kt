@@ -11,7 +11,7 @@ data class RefreshToken(
     val username: String,
 
     @Indexed
-    val token: String,
+    val refreshToken: String,
 
     val expiresAt: LocalDateTime
 )

@@ -49,7 +49,7 @@ class JwtProvider(
         // RefreshToken 엔티티로 저장
         val refreshTokenEntity = RefreshToken(
             username = username,
-            token = refreshToken,
+            refreshToken = refreshToken,
             expiresAt = LocalDateTime.now().plusSeconds(jwtProperties.refreshTokenExpiration / 1000)
         )
 
