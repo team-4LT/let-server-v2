@@ -1,5 +1,6 @@
 package com.example.auth.domain.user.controller
 
+import com.example.auth.domain.user.docs.UserDocs
 import com.example.auth.domain.user.dto.response.GetMeResponse
 import com.example.auth.domain.user.service.UserService
 import com.example.auth.global.common.BaseResponse
@@ -13,9 +14,9 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/users")
 class UserController(
     private val userService: UserService
-) {
+): UserDocs {
     @GetMapping("/me")
-    fun getMe(): ResponseEntity<BaseResponse<GetMeResponse>>{
+    override fun getMe(): ResponseEntity<BaseResponse<GetMeResponse>>{
         return BaseResponse.of(userService.getMe(), HttpStatus.OK.value())
     }
 }
