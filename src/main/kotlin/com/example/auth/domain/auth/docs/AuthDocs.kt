@@ -18,57 +18,15 @@ import org.springframework.http.ResponseEntity
 interface AuthDocs {
 
     @Operation(summary = "회원가입", description = "새로운 사용자를 등록합니다")
-    @ApiResponses(
-        value = [
-            ApiResponse(
-                responseCode = "201",
-                description = "회원가입 성공",
-                content = [Content(schema = Schema(implementation = BaseResponse::class))]
-            ),
-            ApiResponse(
-                responseCode = "400",
-                description = "잘못된 요청 (이메일 중복 등)",
-                content = [Content(schema = Schema(implementation = BaseResponse::class))]
-            )
-        ]
-    )
     fun signup(signUpRequest: SignUpRequest): ResponseEntity<BaseResponse<Unit>>
 
     @Operation(summary = "로그인", description = "이메일과 비밀번호로 로그인합니다")
-    @ApiResponses(
-        value = [
-            ApiResponse(
-                responseCode = "200",
-                description = "로그인 성공",
-                content = [Content(schema = Schema(implementation = TokenResponse::class))]
-            ),
-            ApiResponse(
-                responseCode = "401",
-                description = "인증 실패 (이메일 또는 비밀번호 오류)",
-                content = [Content(schema = Schema(implementation = BaseResponse::class))]
-            )
-        ]
-    )
     fun login(loginRequest: LoginRequest): ResponseEntity<BaseResponse<TokenResponse>>
 
     @Operation(
         summary = "토큰 재발급",
         description = "리프레시 토큰으로 새로운 액세스 토큰을 발급받습니다",
         security = [SecurityRequirement(name = "bearerAuth")]
-    )
-    @ApiResponses(
-        value = [
-            ApiResponse(
-                responseCode = "200",
-                description = "토큰 재발급 성공",
-                content = [Content(schema = Schema(implementation = TokenResponse::class))]
-            ),
-            ApiResponse(
-                responseCode = "401",
-                description = "유효하지 않은 리프레시 토큰",
-                content = [Content(schema = Schema(implementation = BaseResponse::class))]
-            )
-        ]
     )
     fun reissue(reissueRequest: ReissueRequest): ResponseEntity<BaseResponse<TokenResponse>>
 }
