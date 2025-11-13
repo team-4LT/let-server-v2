@@ -4,6 +4,7 @@ import com.example.auth.global.security.jwt.filter.JwtAuthenticationFilter
 import com.example.auth.global.security.jwt.filter.JwtExceptionFilter
 import com.example.auth.global.security.jwt.handler.JwtAccessDeniedHandler
 import com.example.auth.global.security.jwt.handler.JwtAuthenticationEntryPoint
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
@@ -22,8 +23,14 @@ class SecurityConfig(
     private val jwtAuthenticationEntryPoint: JwtAuthenticationEntryPoint,
     private val jwtAccessDeniedHandler: JwtAccessDeniedHandler
 ) {
+    @Value("\${security.dummy-password-hash}")
+    private lateinit var dummyPasswordHash: String
+
     @Bean
     fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
+
+    @Bean
+    fun dummyPasswordHash(): String = dummyPasswordHash
 
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
