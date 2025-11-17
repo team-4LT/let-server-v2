@@ -1,0 +1,2 @@
+ALTER TABLE `users`
+MODIFY COLUMN `student_id` INT NOT NULL;
