@@ -1,4 +1,4 @@
-package com.example.let_v2.domain.user.repository
+package com.example.let_v2.domain.user.repository.cache
 
 import com.example.let_v2.domain.user.domain.User
 import com.fasterxml.jackson.databind.ObjectMapper

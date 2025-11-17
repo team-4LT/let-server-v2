@@ -4,7 +4,7 @@ import com.example.let_v2.domain.auth.domain.RefreshToken
 import com.example.let_v2.domain.auth.repository.BlacklistTokenRepository
 import com.example.let_v2.domain.auth.repository.RefreshTokenRepository
 import com.example.let_v2.domain.user.domain.UserRole
-import com.example.let_v2.domain.user.repository.UserCacheRepository
+import com.example.let_v2.domain.user.repository.cache.UserCacheRepository
 import com.example.let_v2.domain.user.repository.UserRepository
 import com.example.let_v2.domain.user.repository.findByNameOrThrow
 import com.example.let_v2.global.error.CustomException
