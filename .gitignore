@@ -48,4 +48,3 @@ out/
 application-secret.yml
 application-local.yml
 **/resources/application-prod.yml
-
