@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS `users` (
+    `user_id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `username` VARCHAR(255) NOT NULL,
+    `password` VARCHAR(255) NOT NULL,
+    `student_id` BIGINT NOT NULL UNIQUE,
+    `real_name` VARCHAR(255) NOT NULL,
+    `role` ENUM('STUDENT', 'TEACHER') NOT NULL
+);

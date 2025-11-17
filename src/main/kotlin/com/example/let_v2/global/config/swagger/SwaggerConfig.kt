@@ -17,8 +17,8 @@ class SwaggerConfig {
         return OpenAPI()
             .info(
                 Info()
-                    .title("Auth API")
-                    .description("auth docs")
+                    .title("LET V2 API")
+                    .description("LET V2 docs")
                     .version("1.0.0")
             )
             .addSecurityItem(SecurityRequirement().addList(securitySchemeName))
