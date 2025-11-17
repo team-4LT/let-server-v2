@@ -1,5 +1,6 @@
 package com.example.let_v2.domain.auth.dto.request
 
+import com.example.let_v2.domain.allergy.Allergy
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Positive
@@ -16,5 +17,6 @@ data class SignUpRequest(
     @field:Positive(message = "학번은 양수여야 합니다")
     val studentId: Int,
     @field:NotBlank(message = "실명은 필수입니다")
-    val realName: String
+    val realName: String,
+    val allergies: List<Allergy>
 )

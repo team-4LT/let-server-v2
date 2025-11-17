@@ -1,5 +1,6 @@
 package com.example.let_v2.domain.auth.service
 
+import com.example.let_v2.domain.allergy.Allergy
 import com.example.let_v2.domain.auth.domain.BlacklistToken
 import com.example.let_v2.domain.auth.dto.request.LoginRequest
 import com.example.let_v2.domain.auth.dto.request.ReissueRequest
@@ -7,8 +8,10 @@ import com.example.let_v2.domain.auth.dto.request.SignUpRequest
 import com.example.let_v2.domain.auth.repository.BlacklistTokenRepository
 import com.example.let_v2.domain.auth.repository.RefreshTokenRepository
 import com.example.let_v2.domain.user.domain.User
+import com.example.let_v2.domain.user.domain.UserAllergy
 import com.example.let_v2.domain.user.domain.UserRole
 import com.example.let_v2.domain.user.error.UserError
+import com.example.let_v2.domain.user.repository.allergy.UserAllergyRepository
 import com.example.let_v2.domain.user.repository.UserRepository
 import com.example.let_v2.domain.user.repository.findByNameOrThrow
 import com.example.let_v2.global.error.CustomException
@@ -30,7 +33,8 @@ class AuthService(
     private val tokenRepository: RefreshTokenRepository,
     private val securityUtil: SecurityUtil,
     private val blacklistTokenRepository: BlacklistTokenRepository,
-    private val dummyPasswordHash: String
+    private val dummyPasswordHash: String,
+    private val userAllergyRepository: UserAllergyRepository
 ) {
 
 
@@ -45,7 +49,21 @@ class AuthService(
             realName = request.realName,
             studentId = request.studentId
         )
-        userRepository.save(user)
+        val savedUser = userRepository.save(user)
+
+        if(request.allergies.isNotEmpty()) {
+            registerAllergies(savedUser, request.allergies)
+        }
+    }
+
+    private fun registerAllergies(user: User, allergies: List<Allergy>) {
+        val userAllergies = allergies.map { allergy ->
+            UserAllergy(
+                userId = user.id!!,
+                allergy = allergy
+            )
+        }
+        userAllergyRepository.saveAll(userAllergies)
     }
 
     @Transactional
@@ -81,7 +99,7 @@ class AuthService(
     }
 
     @Transactional
-     fun logout(): Unit {
+     fun logout() {
         val username = securityUtil.getCurrentUser().name
         tokenRepository.deleteById(username)
 
