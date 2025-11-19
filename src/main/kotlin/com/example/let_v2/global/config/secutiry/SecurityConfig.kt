@@ -14,6 +14,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository
+import org.springframework.security.web.csrf.XorCsrfTokenRequestAttributeHandler
 
 @Configuration
 @EnableWebSecurity
@@ -35,7 +37,16 @@ class SecurityConfig(
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http
-            .csrf { it.disable() }
+            .csrf { csrf ->
+                csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                    .csrfTokenRequestHandler(XorCsrfTokenRequestAttributeHandler())
+                    .ignoringRequestMatchers(
+                        "/auth/signup",
+                        "/auth/login",
+                        "/auth/reissue",
+                        "/swagger-ui/**",
+                        "/v3/api-docs/**"
+                    ) }
             .cors {}
             .formLogin { it.disable() }
             .httpBasic { it.disable() }
