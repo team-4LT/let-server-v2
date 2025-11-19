@@ -1,4 +1,4 @@
-package com.example.let_v2.global.config.ratelimit
+package com.example.let_v2.global.ratelimit.config
 
 import io.github.bucket4j.Bandwidth
 import io.github.bucket4j.BucketConfiguration

@@ -1,8 +1,8 @@
 package com.example.let_v2.global.interceptor
 
-import com.example.let_v2.global.config.ratelimit.RateLimitConfig
+import com.example.let_v2.global.ratelimit.config.RateLimitConfig
 import com.example.let_v2.global.error.ErrorResponse
-import com.example.let_v2.global.error.RateLimitError
+import com.example.let_v2.global.ratelimit.error.RateLimitError
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.github.bucket4j.distributed.proxy.ProxyManager
 import jakarta.servlet.http.HttpServletRequest
