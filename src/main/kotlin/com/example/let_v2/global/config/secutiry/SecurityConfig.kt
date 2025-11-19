@@ -1,5 +1,6 @@
 package com.example.let_v2.global.config.secutiry
 
+import com.example.let_v2.global.security.csrf.CsrfHeaderFilter
 import com.example.let_v2.global.security.jwt.filter.JwtAuthenticationFilter
 import com.example.let_v2.global.security.jwt.filter.JwtExceptionFilter
 import com.example.let_v2.global.security.jwt.handler.JwtAccessDeniedHandler
@@ -60,6 +61,7 @@ class SecurityConfig(
                     .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                     .anyRequest().authenticated()
             }
+            .addFilterBefore(CsrfHeaderFilter(), CsrfHeaderFilter::class.java)
             .addFilterBefore(jwtExceptionFilter, UsernamePasswordAuthenticationFilter::class.java)
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
             .headers { headers ->
