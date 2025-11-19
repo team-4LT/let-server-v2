@@ -73,8 +73,8 @@ flyway {
     url = dbUrl
     user = dbUser
     password = dbPassword
-    schemas = listOfNotNull(dbSchema)
-    locations = listOf("filesystem:src/main/resources/db/migration")
+    schemas = arrayOf(dbSchema)
+    locations = arrayOf("filesystem:src/main/resources/db/migration")
     baselineOnMigrate = true
 }
 
@@ -85,31 +85,31 @@ jooq {
         create("main") {
             generateSchemaSourceOnCompilation.set(true)
 
-            generationTool.apply {
+            jooqConfiguration.apply {
                 logging = org.jooq.meta.jaxb.Logging.WARN
 
-                jdbc.apply {
+                jdbc = org.jooq.meta.jaxb.Jdbc().apply {
                     driver = "com.mysql.cj.jdbc.Driver"
                     url = dbUrl
                     user = dbUser
                     password = dbPassword
                 }
 
-                generator.apply {
+                generator = org.jooq.meta.jaxb.Generator().apply {
                     name = "org.jooq.codegen.KotlinGenerator"
 
-                    database.apply {
+                    database = org.jooq.meta.jaxb.Database().apply {
                         name = "org.jooq.meta.mysql.MySQLDatabase"
                         inputSchema = dbSchema
                         excludes = "flyway_schema_history"
                     }
 
-                    target.apply {
+                    target = org.jooq.meta.jaxb.Target().apply {
                         packageName = "com.example.auth.generated.jooq"
                         directory = "build/generated-src/jooq/main"
                     }
 
-                    generate.apply {
+                    generate = org.jooq.meta.jaxb.Generate().apply {
                         isDaos = true
                         isPojos = true
                         isPojosAsKotlinDataClasses = true
