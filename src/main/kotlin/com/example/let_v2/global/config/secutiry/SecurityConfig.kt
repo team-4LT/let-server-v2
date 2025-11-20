@@ -1,11 +1,11 @@
 package com.example.let_v2.global.config.secutiry
 
+import com.example.let_v2.global.config.properties.SecurityProperties
 import com.example.let_v2.global.security.csrf.CsrfHeaderFilter
 import com.example.let_v2.global.security.jwt.filter.JwtAuthenticationFilter
 import com.example.let_v2.global.security.jwt.filter.JwtExceptionFilter
 import com.example.let_v2.global.security.jwt.handler.JwtAccessDeniedHandler
 import com.example.let_v2.global.security.jwt.handler.JwtAuthenticationEntryPoint
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
@@ -26,15 +26,13 @@ class SecurityConfig(
     private val jwtExceptionFilter: JwtExceptionFilter,
     private val jwtAuthenticationEntryPoint: JwtAuthenticationEntryPoint,
     private val jwtAccessDeniedHandler: JwtAccessDeniedHandler,
+    private val securityProperties: SecurityProperties
 ) {
-    @Value("\${security.dummy-password-hash}")
-    private lateinit var dummyPasswordHash: String
-
     @Bean
     fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
 
     @Bean
-    fun dummyPasswordHash(): String = dummyPasswordHash
+    fun dummyPasswordHash(): String = securityProperties.dummyPasswordHash
 
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {

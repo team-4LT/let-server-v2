@@ -1,20 +1,15 @@
 package com.example.let_v2.domain.auth.constant
 
 object ClientType {
-    const val WEB = "web"
-    const val APP = "app"
-
-    private val VALID_TYPES = setOf(WEB, APP)
-
-    fun isValid(type: String): Boolean {
-        return VALID_TYPES.contains(type.lowercase())
+    /**
+     * Origin 헤더가 있으면 웹(브라우저)
+     * Origin 헤더가 없으면 앱(네이티브)
+     */
+    fun isWeb(origin: String?): Boolean {
+        return !origin.isNullOrBlank()
     }
 
-    fun isApp(type: String): Boolean {
-        return type.lowercase() in setOf(APP)
-    }
-
-    fun isWeb(type: String): Boolean {
-        return type.lowercase() == WEB
+    fun isApp(origin: String?): Boolean {
+        return origin.isNullOrBlank()
     }
 }
