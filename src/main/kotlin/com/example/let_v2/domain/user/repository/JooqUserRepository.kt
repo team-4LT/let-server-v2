@@ -11,12 +11,12 @@ import org.springframework.stereotype.Repository
 @Repository
 class JooqUserRepository(private val dsl: DSLContext) : UserRepository {
     override fun save(user: User): User {
-        val record = dsl.insertInto(Users.Companion.USERS)
-            .set(Users.Companion.USERS.USERNAME, user.name)
-            .set(Users.Companion.USERS.PASSWORD, user.password)
-            .set(Users.Companion.USERS.ROLE, UsersRole.valueOf(user.role.name))
-            .set(Users.Companion.USERS.STUDENT_ID, user.studentId)
-            .set(Users.Companion.USERS.REAL_NAME, user.realName)
+        val record = dsl.insertInto(Users.USERS)
+            .set(Users.USERS.USERNAME, user.name)
+            .set(Users.USERS.PASSWORD, user.password)
+            .set(Users.USERS.ROLE, UsersRole.valueOf(user.role.name))
+            .set(Users.USERS.STUDENT_ID, user.studentId)
+            .set(Users.USERS.REAL_NAME, user.realName)
             .returning()
             .fetchOne()!!
 
@@ -24,16 +24,16 @@ class JooqUserRepository(private val dsl: DSLContext) : UserRepository {
     }
 
     override fun findByName(name: String): User? {
-        return dsl.selectFrom(Users.Companion.USERS)
-            .where(Users.Companion.USERS.USERNAME.eq(name))
+        return dsl.selectFrom(Users.USERS)
+            .where(Users.USERS.USERNAME.eq(name))
             .fetchOne()
             ?.toDomain()
     }
 
     override fun existsByName(name: String): Boolean {
         return dsl.fetchExists(
-            dsl.selectFrom(Users.Companion.USERS)
-                .where(Users.Companion.USERS.USERNAME.eq(name))
+            dsl.selectFrom(Users.USERS)
+                .where(Users.USERS.USERNAME.eq(name))
         )
     }
 
