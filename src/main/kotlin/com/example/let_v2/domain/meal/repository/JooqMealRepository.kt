@@ -35,8 +35,6 @@ class JooqMealRepository(
     }
 
     override fun saveAll(meals: List<Meal>): List<Meal> {
-        // ID를 포함한 완전한 객체를 반환하기 위해 개별 save를 호출합니다.
-        // 트랜잭션 내에서 실행되므로 원자성은 보장되며, batch 후 select 보다 안정적이고 효율적입니다.
         return meals.map { save(it) }
     }
 
