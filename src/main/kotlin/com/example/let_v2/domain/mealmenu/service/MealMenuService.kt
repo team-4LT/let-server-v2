@@ -29,7 +29,6 @@ class MealMenuService(
     private lateinit var apiKey: String
 
     @Scheduled(cron = "0 0 0 1 * ?")
-    @PostConstruct
     fun initializeMealData() {
         CoroutineScope(Dispatchers.Default).launch {
             try {
