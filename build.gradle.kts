@@ -104,6 +104,13 @@ jooq {
                         name = "org.jooq.meta.mysql.MySQLDatabase"
                         inputSchema = dbSchema
                         excludes = "flyway_schema_history"
+                        forcedTypes.add(
+                            org.jooq.meta.jaxb.ForcedType().apply {
+                                name = "BOOLEAN"                     // Kotlin/Java Boolean으로 매핑
+                                includeTypes = "TINYINT\\(1\\)"      // MySQL 내부 타입
+                                includeExpression = ".*\\.EATEN"     // Eaters 테이블의 eaten 컬럼
+                            }
+                        )
                     }
 
                     target = org.jooq.meta.jaxb.Target().apply {
