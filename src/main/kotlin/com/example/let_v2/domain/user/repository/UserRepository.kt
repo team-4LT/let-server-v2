@@ -8,6 +8,7 @@ interface UserRepository {
     fun save(user: User): User
     fun findByName(name: String): User?
     fun existsByName(name: String): Boolean
+    fun findAllStudents(): List<User>
 }
 
 fun UserRepository.findByNameOrThrow(username: String): User {

@@ -3,6 +3,7 @@ package com.example.let_v2.domain.user.repository
 import com.example.auth.generated.jooq.enums.UsersRole
 import com.example.auth.generated.jooq.tables.Users
 import com.example.auth.generated.jooq.tables.records.UsersRecord
+import com.example.auth.generated.jooq.tables.references.USERS
 import com.example.let_v2.domain.user.domain.User
 import com.example.let_v2.domain.user.domain.UserRole
 import org.jooq.DSLContext
@@ -35,6 +36,13 @@ class JooqUserRepository(private val dsl: DSLContext) : UserRepository {
             dsl.selectFrom(Users.USERS)
                 .where(Users.USERS.USERNAME.eq(name))
         )
+    }
+
+    override fun findAllStudents(): List<User> {
+        return  dsl.selectFrom(Users.USERS)
+            .where(USERS.ROLE.eq(UsersRole.STUDENT))
+            .fetch()
+            .map{it.toDomain()}
     }
 
 
