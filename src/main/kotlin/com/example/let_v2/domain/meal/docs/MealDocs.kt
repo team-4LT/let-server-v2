@@ -6,12 +6,14 @@ import com.example.let_v2.global.common.BaseResponse
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.enums.ParameterIn
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
 import java.util.Date
 
+@Tag(name = "meals", description = "급식 관련 API")
 interface MealDocs {
     @Operation(summary = "현재 달의 급식 조회")
     fun getMonthlyMenu(
