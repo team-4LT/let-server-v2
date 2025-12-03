@@ -22,18 +22,18 @@ class JooqMenuRepository(
         return record.toDomain()
     }
 
-    override fun saveAll(menus: List<Menu>): List<Menu> {
-        val records = menus.map { menu ->
-            dsl.insertInto(Menus.MENUS)
-                .set(Menus.MENUS.MENU_NAME, menu.name)
-                .set(Menus.MENUS.MENU_SCORE, menu.score)
-                .set(Menus.MENUS.LIKE_COUNT, menu.likeCount)
-                .set(Menus.MENUS.DISLIKE_COUNT, menu.dislikeCount)
-                .set(Menus.MENUS.CURRENT_RANK, menu.currentRank)
-                .returning()
-                .fetchOne()!!
-        }
-        return records.map { it.toDomain() }
+    override fun saveAll(menus: List<Menu>) {
+        dsl.batch(
+            menus.map { menu ->
+                dsl.insertInto(Menus.MENUS)
+                    .set(Menus.MENUS.MENU_NAME, menu.name)
+                    .set(Menus.MENUS.MENU_SCORE, menu.score)
+                    .set(Menus.MENUS.LIKE_COUNT, menu.likeCount)
+                    .set(Menus.MENUS.DISLIKE_COUNT, menu.dislikeCount)
+                    .set(Menus.MENUS.CURRENT_RANK, menu.currentRank)
+                // returning()는 batch에서 바로 사용 불가
+            }
+        ).execute()
     }
 
     override fun findAllByNameIn(names: List<String>): List<Menu> {
