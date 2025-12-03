@@ -45,6 +45,13 @@ class JooqUserRepository(private val dsl: DSLContext) : UserRepository {
             .map{it.toDomain()}
     }
 
+    override fun findById(userId: Long): User? {
+        return dsl.selectFrom(Users.USERS)
+            .where(Users.USERS.USER_ID.eq(userId))
+            .fetchOne()
+            ?.toDomain()
+    }
+
 
     private fun UsersRecord.toDomain(): User {
         return User(

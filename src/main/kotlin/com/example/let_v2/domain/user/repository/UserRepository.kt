@@ -9,9 +9,15 @@ interface UserRepository {
     fun findByName(name: String): User?
     fun existsByName(name: String): Boolean
     fun findAllStudents(): List<User>
+    fun findById(userId: Long) : User?
 }
 
 fun UserRepository.findByNameOrThrow(username: String): User {
     return findByName(username)
+        ?: throw CustomException(UserError.USER_NOT_FOUND)
+}
+
+fun UserRepository.findByIdOrThrow(userId: Long): User {
+    return findById(userId)
         ?: throw CustomException(UserError.USER_NOT_FOUND)
 }
