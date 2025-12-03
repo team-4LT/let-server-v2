@@ -10,7 +10,6 @@ import com.example.let_v2.domain.menu.domain.Menu
 import com.example.let_v2.domain.menu.domain.MenuAllergy
 import com.example.let_v2.domain.menu.repository.MenuRepository
 import com.example.let_v2.domain.menu.repository.allergy.MenuAllergyRepository
-import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
@@ -23,7 +22,6 @@ class MealMenuTransactionService(
     private val mealMenuRepository: MealMenuRepository,
     private val menuAllergyRepository: MenuAllergyRepository,
 ) {
-    private val logger = LoggerFactory.getLogger(MealMenuTransactionService::class.java)
     private val DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd")
 
     @Transactional

@@ -5,6 +5,7 @@ import com.example.let_v2.domain.meal.dto.MealInfo
 import com.example.let_v2.domain.mealmenu.dto.DateRange
 import com.example.let_v2.domain.mealmenu.dto.MenuInfo
 import com.fasterxml.jackson.databind.ObjectMapper
+import jakarta.annotation.PostConstruct
 import kotlinx.coroutines.*
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -28,6 +29,7 @@ class MealMenuService(
     private lateinit var apiKey: String
 
     @Scheduled(cron = "0 0 0 1 * ?")
+    @PostConstruct
     fun initializeMealData() {
         CoroutineScope(Dispatchers.Default).launch {
             try {
@@ -42,17 +44,11 @@ class MealMenuService(
         val now = LocalDate.now()
         val dateRange = createDateRange(now)
 
-        val allMeals = coroutineScope {
-            MealType.entries.map { mealType ->
-                async(Dispatchers.IO) {
-                    try {
-                        fetchAndParseMealData(dateRange, mealType)
-                    } catch (e: Exception) {
-                        logger.error("급식 데이터 수집 실패. MealType: ${mealType.value}", e)
-                        emptyList<MealInfo>()
-                    }
-                }
-            }.awaitAll().flatten()
+        val allMeals = try {
+            fetchAndParseMealData(dateRange)
+        } catch (e: Exception) {
+            logger.error("급식 데이터 수집 실패", e)
+            emptyList<MealInfo>()
         }
 
         if (allMeals.isNotEmpty()) {
@@ -62,28 +58,28 @@ class MealMenuService(
         }
     }
 
-    private suspend fun fetchAndParseMealData(dateRange: DateRange, mealType: MealType): List<MealInfo> {
-        val url = buildApiUrl(dateRange, mealType)
+    private suspend fun fetchAndParseMealData(dateRange: DateRange): List<MealInfo> {
+        val url = buildApiUrl(dateRange)
         val response = withContext(Dispatchers.IO) {
             restTemplate.getForEntity(url, String::class.java)
         }
 
         return if (response.statusCode.is2xxSuccessful && response.body != null) {
-            parseMealData(response.body!!, mealType)
+            parseMealData(response.body!!)
         } else {
-            logger.warn("API 호출 실패. MealType: ${mealType.value}, Status: ${response.statusCode}")
+            logger.warn("API 호출 실패. Status: ${response.statusCode}")
             emptyList()
         }
     }
 
-    private fun buildApiUrl(dateRange: DateRange, mealType: MealType): String {
+    private fun buildApiUrl(dateRange: DateRange): String {
         val OFFICE_CODE = "D10"
         val SCHOOL_CODE = "7240454"
         val PAGE_SIZE = 100
         return "https://open.neis.go.kr/hub/mealServiceDietInfo" +
                 "?ATPT_OFCDC_SC_CODE=$OFFICE_CODE&SD_SCHUL_CODE=$SCHOOL_CODE" +
                 "&KEY=$apiKey&MLSV_FROM_YMD=${dateRange.from}&MLSV_TO_YMD=${dateRange.to}" +
-                "&Type=json&MMEAL_SC_CODE=${mealType.toInt()}&pSize=$PAGE_SIZE"
+                "&Type=json&pSize=$PAGE_SIZE"
     }
 
     private fun createDateRange(date: LocalDate): DateRange {
@@ -92,26 +88,34 @@ class MealMenuService(
         return DateRange(from, to)
     }
 
-    private fun parseMealData(json: String, mealType: MealType): List<MealInfo> {
+    private fun parseMealData(json: String): List<MealInfo> {
         val root = objectMapper.readTree(json)
         val rows = root.path("mealServiceDietInfo")
             .path(API_RESPONSE_DATA_INDEX)
             .path("row")
 
         if (rows.isMissingNode || !rows.isArray) {
-            logger.warn("API 응답에서 row 데이터를 찾을 수 없음. MealType: ${mealType.value}")
+            logger.warn("API 응답에서 row 데이터를 찾을 수 없음")
             return emptyList()
         }
 
         val allergyPattern = "\\((\\d+(?:\\.\\d+)*)\\)".toRegex()
 
-        return rows.map { row ->
+        return rows.mapNotNull { row ->
             val mealDate = row.path("MLSV_YMD").asText()
             val menuWithAllergiesRaw = row.path("DDISH_NM").asText()
             val calories = row.path("CAL_INFO").asText()
                 .replace("Kcal", "")
                 .trim()
                 .toFloatOrNull() ?: 0f
+            
+            val mealTypeCode = row.path("MMEAL_SC_CODE").asText().toIntOrNull()
+            val mealType = MealType.entries.find { it.code == mealTypeCode }
+            
+            if (mealType == null) {
+                logger.warn("알 수 없는 급식 타입: $mealTypeCode")
+                return@mapNotNull null
+            }
 
             val menus = menuWithAllergiesRaw.split("<br/>").mapNotNull { menuString ->
                 val cleanedMenuString = menuString.trim()
