@@ -28,12 +28,19 @@ class JooqEaterRepository(
         val minId = grade * 1000
         val maxId = (grade + 1) * 1000
 
-        val query = dsl.select()
+        return dsl.select(e.EATER_ID, e.USER_ID, e.MEAL_ID, e.EATEN)
             .from(e)
             .join(u).on(e.USER_ID.eq(u.USER_ID))
             .where(u.STUDENT_ID.between(minId, maxId-1))
             .orderBy(u.STUDENT_ID.desc())
-
-        return query.fetchInto(Eater::class.java)
+            .fetch()
+            .map { record ->
+                Eater(
+                    id = record.get(e.EATER_ID),
+                    userId = record.get(e.USER_ID)!!,
+                    mealId = record.get(e.MEAL_ID)!!,
+                    eaten = record.get(e.EATEN)!!
+                )
+            }
     }
 }
