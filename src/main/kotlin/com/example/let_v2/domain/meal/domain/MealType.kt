@@ -13,5 +13,4 @@ enum class MealType(val value: String, val code: Int) {
         DINNER -> MealsMealType.석식
     }
 
-    fun toInt(): Int = code
 }
