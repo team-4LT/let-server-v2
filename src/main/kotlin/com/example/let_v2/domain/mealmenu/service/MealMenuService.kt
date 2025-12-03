@@ -17,7 +17,7 @@ import java.time.format.DateTimeFormatter
 @Service
 class MealMenuService(
     private val restTemplate: RestTemplate,
-    private val transactionService: MealMenuTransactionService,
+    private val transactionService: MealDataPersistenceService,
     private val objectMapper: ObjectMapper
 ) {
     private val logger = LoggerFactory.getLogger(MealMenuService::class.java)
