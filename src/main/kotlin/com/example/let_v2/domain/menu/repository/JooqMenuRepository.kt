@@ -4,6 +4,7 @@ import com.example.auth.generated.jooq.tables.Menus
 import com.example.auth.generated.jooq.tables.records.MenusRecord
 import com.example.let_v2.domain.menu.domain.Menu
 import org.jooq.DSLContext
+import org.jooq.impl.DSL.row
 import org.springframework.stereotype.Repository
 
 @Repository
@@ -22,18 +23,28 @@ class JooqMenuRepository(
         return record.toDomain()
     }
 
-    override fun saveAll(menus: List<Menu>) {
-        dsl.batch(
-            menus.map { menu ->
-                dsl.insertInto(Menus.MENUS)
-                    .set(Menus.MENUS.MENU_NAME, menu.name)
-                    .set(Menus.MENUS.MENU_SCORE, menu.score)
-                    .set(Menus.MENUS.LIKE_COUNT, menu.likeCount)
-                    .set(Menus.MENUS.DISLIKE_COUNT, menu.dislikeCount)
-                    .set(Menus.MENUS.CURRENT_RANK, menu.currentRank)
-                // returning()는 batch에서 바로 사용 불가
-            }
-        ).execute()
+    override fun saveAll(menus: List<Menu>): List<Menu> {
+        val result = dsl
+            .insertInto(Menus.MENUS,
+                Menus.MENUS.MENU_NAME,
+                Menus.MENUS.MENU_SCORE,
+                Menus.MENUS.LIKE_COUNT,
+                Menus.MENUS.DISLIKE_COUNT,
+                Menus.MENUS.CURRENT_RANK)
+            .valuesOfRows(
+                menus.map { menu ->
+                    row(
+                        menu.name,
+                        menu.score,
+                        menu.likeCount,
+                        menu.dislikeCount,
+                        menu.currentRank
+                    )
+                }
+            )
+            .returning()
+            .fetch()
+        return result.map { it.toDomain() }
     }
 
     override fun findAllByNameIn(names: List<String>): List<Menu> {

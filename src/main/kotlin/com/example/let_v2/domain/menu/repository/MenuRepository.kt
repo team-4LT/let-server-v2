@@ -6,7 +6,7 @@ import com.example.let_v2.global.error.CustomException
 
 interface MenuRepository {
     fun save(menu: Menu) : Menu
-    fun saveAll(menus: List<Menu>)
+    fun saveAll(menus: List<Menu>): List<Menu>
     fun findAllByNameIn(names: List<String>): List<Menu>
     fun findByName(name: String) : Menu?
     fun findById(id: Long) : Menu?
