@@ -1,6 +1,7 @@
 package com.example.let_v2.domain.eater.repository
 
 import com.example.auth.generated.jooq.tables.Eaters
+import com.example.auth.generated.jooq.tables.Users
 import com.example.let_v2.domain.eater.domain.Eater
 import org.jooq.DSLContext
 import org.springframework.stereotype.Repository
@@ -18,5 +19,21 @@ class JooqEaterRepository(
                     .set(Eaters.EATERS.EATEN, eater.eaten)
             }
         ).execute()
+    }
+
+    override fun findByGrade(grade: Int): List<Eater> {
+        val e = Eaters.EATERS
+        val u = Users.USERS
+
+        val minId = grade * 1000
+        val maxId = (grade + 1) * 1000
+
+        val query = dsl.select()
+            .from(e)
+            .join(u).on(e.USER_ID.eq(u.USER_ID))
+            .where(u.STUDENT_ID.between(minId, maxId-1))
+            .orderBy(u.STUDENT_ID.desc())
+
+        return query.fetchInto(Eater::class.java)
     }
 }

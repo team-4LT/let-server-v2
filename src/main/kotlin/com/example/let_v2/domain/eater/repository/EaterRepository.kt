@@ -4,4 +4,5 @@ import com.example.let_v2.domain.eater.domain.Eater
 
 interface EaterRepository {
     fun saveAll(eaters: List<Eater>)
+    fun findByGrade(grade: Int): List<Eater>
 }
