@@ -5,7 +5,6 @@ import com.example.let_v2.domain.meal.dto.MealInfo
 import com.example.let_v2.domain.mealmenu.dto.DateRange
 import com.example.let_v2.domain.mealmenu.dto.MenuInfo
 import com.fasterxml.jackson.databind.ObjectMapper
-import jakarta.annotation.PostConstruct
 import kotlinx.coroutines.*
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
