@@ -8,7 +8,6 @@ import org.springframework.boot.runApplication
 @SpringBootApplication
 @EnableConfigurationProperties(SecurityProperties::class)
 class AuthApplication
-
 fun main(args: Array<String>) {
     runApplication<AuthApplication>(*args)
 }

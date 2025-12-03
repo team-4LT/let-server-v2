@@ -8,7 +8,7 @@ import org.springframework.security.core.userdetails.UserDetailsService
 class CustomUserDetailsService(
     private val userRepository: UserRepository
 ) : UserDetailsService {
-    override fun loadUserByUsername(username: String): UserDetails? {
+    override fun loadUserByUsername(username: String): UserDetails {
         val user = userRepository.findByNameOrThrow(username)
         return CustomUserDetails(user)
     }

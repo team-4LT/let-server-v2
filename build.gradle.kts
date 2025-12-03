@@ -1,16 +1,9 @@
-buildscript {
-    dependencies {
-        classpath("org.flywaydb:flyway-mysql:11.17.0")
-    }
-}
-
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.9.25"
-    id("org.jetbrains.kotlin.plugin.spring") version "1.9.25"
-    id("org.springframework.boot") version "3.5.7"
+    id("org.jetbrains.kotlin.jvm") version "2.2.0"
+    id("org.jetbrains.kotlin.plugin.spring") version "2.2.0"
+    id("org.springframework.boot") version "4.0.0"
     id("io.spring.dependency-management") version "1.1.7"
     id("nu.studer.jooq") version "9.0"
-    id("org.flywaydb.flyway") version "11.17.0"
 }
 
 group = "com.example"
@@ -23,62 +16,59 @@ java {
     }
 }
 
-configurations {
-    compileOnly {
-        extendsFrom(annotationProcessor.get())
-    }
-}
-
 repositories {
     mavenCentral()
 }
 
 dependencies {
+    // Spring Boot starters
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
+    implementation("org.springframework.boot:spring-boot-starter-jooq")
+    implementation("org.springframework.boot:spring-boot-starter-flyway")
 
+    // Kotlin
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
+
+    // MySQL
     implementation("com.mysql:mysql-connector-j")
 
+    // Flyway MySQL 지원 명시적 추가
+    implementation("org.flywaydb:flyway-mysql")
+
+    // JWT
     implementation("io.jsonwebtoken:jjwt-api:0.12.6")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
 
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
+    // API Docs
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.0")
 
-    implementation("com.bucket4j:bucket4j-core:8.7.0")
-    implementation("com.bucket4j:bucket4j-redis:8.7.0")
+    // Bucket4j
+    implementation("com.bucket4j:bucket4j_jdk17-core:8.14.0")
+    implementation("com.bucket4j:bucket4j_jdk17-lettuce:8.14.0")
 
-    implementation("org.springframework.boot:spring-boot-starter-jooq")
+    // jOOQ Generator - 여기도 버전 통일
     jooqGenerator("com.mysql:mysql-connector-j")
 
-    implementation("org.flywaydb:flyway-core")
-    implementation("org.flywaydb:flyway-mysql")
+    // Coroutines
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
 
+    // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testImplementation("org.springframework.security:spring-security-test")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+    testImplementation("com.h2database:h2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
 }
 
 val dbUrl: String? = project.findProperty("db.url") as String?
 val dbUser: String? = project.findProperty("db.username") as String?
 val dbPassword: String? = project.findProperty("db.password") as String?
 val dbSchema: String? = project.findProperty("db.schema") as String?
-
-flyway {
-    url = dbUrl
-    user = dbUser
-    password = dbPassword
-    schemas = arrayOf(dbSchema)
-    locations = arrayOf("filesystem:src/main/resources/db/migration")
-    baselineOnMigrate = true
-}
 
 jooq {
     version.set(dependencyManagement.importedProperties["jooq.version"])

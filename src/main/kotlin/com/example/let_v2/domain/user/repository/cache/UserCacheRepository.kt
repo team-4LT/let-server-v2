@@ -1,9 +1,9 @@
 package com.example.let_v2.domain.user.repository.cache
 
 import com.example.let_v2.domain.user.domain.User
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Repository
+import tools.jackson.databind.ObjectMapper
 import java.util.concurrent.TimeUnit
 
 @Repository
