@@ -14,15 +14,13 @@ data class GetMonthlyMealResponse(
     val menus : List<MenuResponse>
 ) {
     companion object {
-        fun of(
-            meal : Meal
-        ) : GetMonthlyMealResponse {
+        fun of(meal: Meal, menus: List<MenuResponse> = emptyList()): GetMonthlyMealResponse {
             return GetMonthlyMealResponse(
                 mealId = meal.id!!,
                 mealDate = meal.mealDate,
                 mealType = meal.mealType,
                 calories = meal.calories,
-                menus = mutableListOf()
+                menus = menus
             )
         }
     }
