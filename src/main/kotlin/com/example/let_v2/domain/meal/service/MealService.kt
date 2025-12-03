@@ -2,21 +2,26 @@ package com.example.let_v2.domain.meal.service
 
 import com.example.let_v2.domain.allergy.Allergy
 import com.example.let_v2.domain.allergy.error.AllergyError
+import com.example.let_v2.domain.meal.domain.Meal
 import com.example.let_v2.domain.meal.domain.MealType
+import com.example.let_v2.domain.meal.dto.response.GetDailyMealResponse
 import com.example.let_v2.domain.meal.dto.response.GetMonthlyMealResponse
 import com.example.let_v2.domain.meal.error.MealError
 import com.example.let_v2.domain.meal.repository.MealRepository
 import com.example.let_v2.domain.meal.repository.findByIdOrThrow
 import com.example.let_v2.domain.mealmenu.domain.MealMenu
+import com.example.let_v2.domain.mealmenu.dto.MonthlyMealMenuQuery
 import com.example.let_v2.domain.mealmenu.repository.MealMenuRepository
 import com.example.let_v2.domain.menu.dto.response.MenuResponse
 import com.example.let_v2.domain.menu.repository.MenuRepository
 import com.example.let_v2.domain.menu.repository.findByIdOrThrow
 import com.example.let_v2.global.error.CustomException
+import com.example.let_v2.global.util.toLocalDate
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.Date
 
 @Service
 @Transactional(readOnly = true)
@@ -41,16 +46,22 @@ class MealService(
         // 알레르기 ID 유효성 검증
         validateAllergyIds(safeAllergyIds)
 
-        val params = mapOf(
-            "yearMonth" to yearMonth,
-            "mealType" to mealType,
-            "allergyList" to safeAllergyIds
+        val query = MonthlyMealMenuQuery(
+            yearMonth = yearMonth,
+            mealType = mealType,
+            allergyList = safeAllergyIds
         )
 
-        val mealMenus = mealMenuRepository.findMonthlyMealMenu(params)
+        return mealMenuRepository.findMonthlyMealMenu(query)
+            .toMealResponses(mealRepository,menuRepository,GetMonthlyMealResponse::of)
+    }
 
-        // MealMenu를 Meal별로 그룹화하여 응답 생성
-        return groupMealMenusByMeal(mealMenus)
+    fun getDailyMenu(
+        today : Date
+    ): List<GetDailyMealResponse> {
+        val date : LocalDate = today.toLocalDate()
+        return mealMenuRepository.findDailyMealMenu(date)
+            .toMealResponses(mealRepository,menuRepository,GetDailyMealResponse::of)
     }
 
     /**
@@ -74,26 +85,19 @@ class MealService(
             }
         }
     }
+}
 
-    /**
-     * MealMenu 리스트를 Meal별로 그룹화하여 응답 DTO 생성
-     */
-    private fun groupMealMenusByMeal(mealMenus: List<MealMenu>): List<GetMonthlyMealResponse> {
-        val mealMap = linkedMapOf<Long, GetMonthlyMealResponse>()
-
-        mealMenus.forEach { mealMenu ->
-            val meal = mealRepository.findByIdOrThrow(mealMenu.mealId)
-            val menu = menuRepository.findByIdOrThrow(mealMenu.menuId)
-
-            // Meal이 없으면 새로 생성, 있으면 기존 것 사용
-            val mealResponse = mealMap.getOrPut(meal.id!!.toLong()) {
-                GetMonthlyMealResponse.of(meal)
+private fun <T> List<MealMenu>.toMealResponses(
+    mealRepository: MealRepository,
+    menuRepository: MenuRepository,
+    mapper: (Meal, List<MenuResponse>) -> T
+): List<T> {
+    return this.groupBy { it.mealId }
+        .map { (mealId, mealMenuList) ->
+            val meal = mealRepository.findByIdOrThrow(mealId)
+            val menus = mealMenuList.map {
+                MenuResponse.of(menuRepository.findByIdOrThrow(it.menuId))
             }
-
-            // 메뉴 추가
-            (mealResponse.menus as MutableList).add(MenuResponse.of(menu))
+            mapper(meal, menus)
         }
-
-        return mealMap.values.toList()
-    }
 }
