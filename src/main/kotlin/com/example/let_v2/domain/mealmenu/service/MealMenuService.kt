@@ -31,17 +31,13 @@ class MealMenuService(
     private lateinit var apiKey: String
 
     @Scheduled(cron = "0 0 0 1 * ?")
-    @PostConstruct
     fun initializeMealData() {
         CoroutineScope(Dispatchers.Default).launch {
-            val start = System.currentTimeMillis()
             try {
                 fetchAndSaveMonthlyMeals()
             } catch (e: Exception) {
                 logger.error("급식 데이터 초기화 실패", e)
             }
-            val end = System.currentTimeMillis()
-            logger.info("fetchAndSaveMonthlyMeals 수행 시간: ${(end - start) / 1000.0}초")
         }
     }
 
