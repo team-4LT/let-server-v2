@@ -54,8 +54,14 @@ dependencies {
     // jOOQ Generator - 여기도 버전 통일
     jooqGenerator("com.mysql:mysql-connector-j")
 
+    implementation("io.netty:netty-resolver-dns-native-macos:4.1.99.Final:osx-aarch_64")
+
+    // WebFlux (WebClient)
+    implementation("org.springframework.boot:spring-boot-starter-webflux")
+    
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.9.0")
 
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
