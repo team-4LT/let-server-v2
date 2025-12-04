@@ -2,11 +2,11 @@ package com.example.let_v2.domain.mealmenu.service
 
 import com.example.let_v2.domain.meal.domain.MealType
 import com.example.let_v2.domain.meal.dto.MealInfo
+import com.example.let_v2.domain.mealmenu.dto.DateRange
 import com.example.let_v2.domain.mealmenu.dto.MenuInfo
 import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.annotation.PostConstruct
 import kotlinx.coroutines.*
-import kotlinx.coroutines.sync.withPermit
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.scheduling.annotation.Scheduled
@@ -25,12 +25,12 @@ class MealMenuService(
     private val logger = LoggerFactory.getLogger(MealMenuService::class.java)
     private val API_RESPONSE_DATA_INDEX = 1
     private val DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd")
-    private val CONCURRENT_REQUESTS = 10
 
     @Value("\${KEY}")
     private lateinit var apiKey: String
 
     @Scheduled(cron = "0 0 0 1 * ?")
+    @PostConstruct
     fun initializeMealData() {
         CoroutineScope(Dispatchers.Default).launch {
             try {
@@ -41,23 +41,16 @@ class MealMenuService(
         }
     }
 
-    suspend fun fetchAndSaveMonthlyMeals() = coroutineScope {
+    suspend fun fetchAndSaveMonthlyMeals() {
         val now = LocalDate.now()
-        val daysInMonth = now.lengthOfMonth()
+        val dateRange = createDateRange(now)
 
-        logger.info("급식 데이터 수집 시작: ${now.year}년 ${now.monthValue}월 (${daysInMonth}일)")
-
-        // 세마포어를 사용한 동시 실행 수 제한
-        val semaphore = kotlinx.coroutines.sync.Semaphore(CONCURRENT_REQUESTS)
-
-        val allMeals = (1..daysInMonth).map { day ->
-            async(Dispatchers.IO) {
-                semaphore.withPermit {
-                    val date = now.withDayOfMonth(day)
-                    fetchDayMealData(date)
-                }
-            }
-        }.awaitAll().flatten()
+        val allMeals = try {
+            fetchMealData(dateRange)
+        } catch (e: Exception) {
+            logger.error("급식 데이터 수집 실패", e)
+            emptyList()
+        }
 
         if (allMeals.isNotEmpty()) {
             transactionService.saveMealsInBulk(allMeals)
@@ -67,40 +60,38 @@ class MealMenuService(
         }
     }
 
-    private suspend fun fetchDayMealData(date: LocalDate): List<MealInfo> {
-        return try {
-            val dateStr = date.format(DATE_FORMATTER)
-            val url = buildApiUrl(dateStr, dateStr)
+    private suspend fun fetchMealData(dateRange: DateRange): List<MealInfo> {
+        val url = buildApiUrl(dateRange)
 
-            logger.debug("급식 데이터 요청: {}", date)
+        logger.debug("급식 데이터 API 호출: $url")
 
-            val json = webClient.get()
-                .uri(url)
-                .retrieve()
-                .awaitBody<String>()
+        // WebClient로 비동기 호출
+        val json = webClient.get()
+            .uri(url)
+            .retrieve()
+            .awaitBody<String>()
 
-            // CPU 작업(파싱)
-            withContext(Dispatchers.Default) {
-                parseMealData(json)
-            }.also {
-                if (it.isNotEmpty()) {
-                    logger.debug("{} 급식 데이터 {}건 파싱 완료", date, it.size)
-                }
-            }
-        } catch (e: Exception) {
-            logger.warn("$date 급식 데이터 조회 실패: ${e.message}")
-            emptyList()
+        // CPU 집약적 작업은 Default 디스패처에서
+        return withContext(Dispatchers.Default) {
+            parseMealData(json)
         }
     }
 
-    private fun buildApiUrl(from: String, to: String): String {
+    private fun buildApiUrl(dateRange: DateRange): String {
         val OFFICE_CODE = "D10"
         val SCHOOL_CODE = "7240454"
-        val PAGE_SIZE = 10
+        val PAGE_SIZE = 100  // 한 달치 데이터
+
         return "https://open.neis.go.kr/hub/mealServiceDietInfo" +
                 "?ATPT_OFCDC_SC_CODE=$OFFICE_CODE&SD_SCHUL_CODE=$SCHOOL_CODE" +
-                "&KEY=$apiKey&MLSV_FROM_YMD=$from&MLSV_TO_YMD=$to" +
+                "&KEY=$apiKey&MLSV_FROM_YMD=${dateRange.from}&MLSV_TO_YMD=${dateRange.to}" +
                 "&Type=json&pSize=$PAGE_SIZE"
+    }
+
+    private fun createDateRange(date: LocalDate): DateRange {
+        val from = date.withDayOfMonth(1).format(DATE_FORMATTER)
+        val to = date.withDayOfMonth(date.lengthOfMonth()).format(DATE_FORMATTER)
+        return DateRange(from, to)
     }
 
     private fun parseMealData(json: String): List<MealInfo> {
@@ -110,6 +101,7 @@ class MealMenuService(
             .path("row")
 
         if (rows.isMissingNode || !rows.isArray) {
+            logger.warn("API 응답에서 row 데이터를 찾을 수 없음")
             return emptyList()
         }
 
